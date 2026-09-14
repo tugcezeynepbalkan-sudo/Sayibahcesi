@@ -11,28 +11,28 @@
   #sub { font-size: 13px; color: #2f9e77; margin-bottom: 8px; font-weight: 600; }
   #msg { font-size: 14px; color: #333; min-height: 38px; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
   
-  /* Izgara Yapısı - Esnek ve Kaymasız */
+  /* Izgara Container */
   #grid-container {
     width: 100%;
     max-width: 330px;
     margin: 0 auto 15px;
-    background: #2f9e77;
+    background: #1b634a; /* Daha koyu yeşil arka plan ile sınırlar daha belirgin */
     padding: 6px;
     border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(47,158,119,0.2);
+    box-shadow: 0 4px 12px rgba(47,158,119,0.3);
   }
 
   #grid { 
     display: grid; 
     grid-template-columns: repeat(6, 1fr); 
-    gap: 3px; 
+    gap: 2px; 
     width: 100%;
   }
 
   .cell { 
     aspect-ratio: 1; 
     background: #fff; 
-    border-radius: 6px; 
+    border-radius: 4px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
@@ -42,12 +42,12 @@
   }
 
   .cell.given { background: #fff3cf; color: #7a5b12; }
-  .cell.selected { outline: 3px solid #007aff; outline-offset: -3px; }
+  .cell.selected { outline: 3px solid #007aff; outline-offset: -3px; z-index: 2; }
   .cell.error { background: #ffd8d8; color: #d32f2f; }
   
-  /* 2x3 Blok Çizgileri - Ayrım Sağlayan Kalın Ayraçlar */
-  .border-bottom { border-bottom: 3px solid #2f9e77; }
-  .border-right { border-right: 3px solid #2f9e77; }
+  /* 2x3 Blok Sınırlarını Ayrıştıran Kalın Çizgiler */
+  .border-bottom { margin-bottom: 5px; }
+  .border-right { margin-right: 5px; }
 
   .numpad { display: flex; justify-content: center; gap: 6px; width: 100%; max-width: 330px; margin: 0 auto 12px; }
   .num-btn { flex: 1; aspect-ratio: 1; background: #fff; border: 2px solid #2f9e77; color: #2f9e77; font-size: 20px; font-weight: bold; border-radius: 10px; }
@@ -188,6 +188,10 @@
         if(grid[r][c].given) classes.push('given');
         if(sel && sel[0] === r && sel[1] === c) classes.push('selected');
         if(grid[r][c].err) classes.push('error');
+
+        // 2x3 Blok Sınır Sınıfları (2. ve 4. satırların altına, 3. sütunun sağına kalın çizgi)
+        if(r === 1 || r === 3) classes.push('border-bottom');
+        if(c === 2) classes.push('border-right');
 
         d.className = classes.join(' ');
         d.innerText = grid[r][c].val || '';
