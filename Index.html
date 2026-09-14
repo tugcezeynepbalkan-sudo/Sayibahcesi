@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sayı Bahçesi</title>
+<style>
+  * { box-sizing: border-box; touch-action: manipulation; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #eaf6f0; text-align: center; margin: 0; padding: 20px; -webkit-user-select: none; }
+  h1 { color: #2f9e77; margin: 10px 0 5px; font-size: 28px; }
+  #msg { font-size: 14px; color: #333; height: 30px; margin-bottom: 10px; font-weight: 500; }
+  #grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-width: 330px; margin: 0 auto 15px; background: #2f9e77; padding: 6px; border-radius: 14px; box-shadow: 0 4px 12px rgba(47,158,119,0.2); }
+  .cell { aspect-ratio: 1; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #2f9e77; }
+  .cell.given { background: #fff3cf; color: #7a5b12; }
+  .cell.selected { border: 3px solid #007aff; }
+  .cell.error { background: #ffd8d8; color: #d32f2f; }
+  .numpad { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto 15px; }
+  .num-btn { flex: 1; aspect-ratio: 1; background: #fff; border: 2px solid #2f9e77; color: #2f9e77; font-size: 20px; font-weight: bold; border-radius: 10px; }
+  .controls { display: flex; justify-content: center; gap: 10px; max-width: 330px; margin: 0 auto; }
+  .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; background: #2f9e77; color: white; }
+</style>
+</head>
+<body>
+<h1>Sayı Bahçesi</h1>
+<div id="msg">Bir kutu seç, sonra bir sayı yerleştir.</div>
+<div id="grid"></div>
+<div class="numpad">
+  <button class="num-btn" onclick="setNum(1)">1</button>
+  <button class="num-btn" onclick="setNum(2)">2</button>
+  <button class="num-btn" onclick="setNum(3)">3</button>
+  <button class="num-btn" onclick="setNum(4)">4</button>
+  <button class="num-btn" onclick="setNum(5)">5</button>
+  <button class="num-btn" onclick="setNum(6)">6</button>
+</div>
+<div class="controls">
+  <button class="btn" style="background:#ff9500" onclick="erase()">Sil</button>
+  <button class="btn" onclick="init()">Yeni Oyun</button>
+</div>
+<script>
+  let base=[[1,2,3,4,5,6],[4,5,6,1,2,3],[2,3,1,5,6,4],[5,6,4,2,3,1],[3,1,2,6,4,5],[6,4,5,3,1,2]];
+  let grid=[], sel=null;
+  function init(){
+    grid=[]; sel=null; document.getElementById('msg').innerText="Bir kutu seç, sonra bir sayı yerleştir.";
+    let pos=[]; for(let r=0;r<6;r++) for(let c=0;c<6;c++) pos.push([r,c]);
+    pos.sort(()=>Math.random()-0.5);
+    let empties = new Set(pos.slice(0,12).map(p=>p[0]+','+p[1]));
+    for(let r=0;r<6;r++){
+      grid[r]=[];
+      for(let c=0;c<6;c++){
+        let isE = empties.has(r+','+c);
+        grid[r][c] = { val: isE ? null : base[r][c], given: !isE, err: false };
+      }
+    }
+    render();
+  }
+  function render(){
+    let g = document.getElementById('grid'); g.innerHTML='';
+    for(let r=0;r<6;r++){
+      for(let c=0;c<6;c++){
+        let d = document.createElement('div');
+        d.className = 'cell' + (grid[r][c].given?' given':'') + (sel&&sel[0]==r&&sel[1]==c?' selected':'') + (grid[r][c].err?' error':'');
+        d.innerText = grid[r][c].val || '';
+        d.onclick = ()=>{ if(!grid[r][c].given) { sel=[r,c]; render(); } };
+        g.appendChild(d);
+      }
+    }
+  }
+  function setNum(n){
+    if(!sel) return;
+    grid[sel[0]][sel[1]].val = n;
+    validate(); render();
+  }
+  function erase(){ if(sel) { grid[sel[0]][sel[1]].val=null; validate(); render(); } }
+  function validate(){
+    for(let r=0;r<6;r++) for(let c=0;c<6;c++) grid[r][c].err=false;
+    for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+      let v=grid[r][c].val; if(!v) continue;
+      for(let i=0;i<6;i++){
+        if(i!=c && grid[r][i].val==v) grid[r][c].err=grid[r][i].err=true;
+        if(i!=r && grid[i][c].val==v) grid[r][c].err=grid[i][c].err=true;
+      }
+    }
+  }
+  init();
+</script>
+</body>
+</html>
