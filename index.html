@@ -16,38 +16,41 @@
     width: 100%;
     max-width: 330px;
     margin: 0 auto 15px;
-    background: #1b634a; /* Daha koyu yeşil arka plan ile sınırlar daha belirgin */
-    padding: 6px;
+    background: #eaf6f0;
+    padding: 4px;
     border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(47,158,119,0.3);
   }
 
   #grid { 
     display: grid; 
     grid-template-columns: repeat(6, 1fr); 
-    gap: 2px; 
+    gap: 0; 
     width: 100%;
+    border: 3px solid #1b634a; /* Genel dış çerçeve */
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1b634a;
   }
 
   .cell { 
     aspect-ratio: 1; 
     background: #fff; 
-    border-radius: 4px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     font-size: 22px; 
     font-weight: bold; 
     color: #2f9e77; 
+    border: 1px solid #d0e8dd; /* İç hücrelerin hafif ince çizgisi */
   }
 
   .cell.given { background: #fff3cf; color: #7a5b12; }
   .cell.selected { outline: 3px solid #007aff; outline-offset: -3px; z-index: 2; }
   .cell.error { background: #ffd8d8; color: #d32f2f; }
   
-  /* 2x3 Blok Sınırlarını Ayrıştıran Kalın Çizgiler */
-  .border-bottom { margin-bottom: 5px; }
-  .border-right { margin-right: 5px; }
+  /* 2x3 Blok Dış Sınırları (Sadece 6'lı grupların çevresi kalın) */
+  .box-border-right { border-right: 3px solid #1b634a !important; }
+  .box-border-bottom { border-bottom: 3px solid #1b634a !important; }
 
   .numpad { display: flex; justify-content: center; gap: 6px; width: 100%; max-width: 330px; margin: 0 auto 12px; }
   .num-btn { flex: 1; aspect-ratio: 1; background: #fff; border: 2px solid #2f9e77; color: #2f9e77; font-size: 20px; font-weight: bold; border-radius: 10px; }
@@ -189,9 +192,9 @@
         if(sel && sel[0] === r && sel[1] === c) classes.push('selected');
         if(grid[r][c].err) classes.push('error');
 
-        // 2x3 Blok Sınır Sınıfları (2. ve 4. satırların altına, 3. sütunun sağına kalın çizgi)
-        if(r === 1 || r === 3) classes.push('border-bottom');
-        if(c === 2) classes.push('border-right');
+        // Sadece 2x3 blok sınırları (3. sütun sağ kenarı ve 2. ile 4. satır alt kenarları kalın)
+        if(c === 2) classes.push('box-border-right');
+        if(r === 1 || r === 3) classes.push('box-border-bottom');
 
         d.className = classes.join(' ');
         d.innerText = grid[r][c].val || '';
