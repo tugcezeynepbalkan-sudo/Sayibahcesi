@@ -11,26 +11,53 @@
   #sub { font-size: 13px; color: #2f9e77; margin-bottom: 8px; font-weight: 600; }
   #msg { font-size: 14px; color: #333; min-height: 38px; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
   
-  #grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; max-width: 330px; margin: 0 auto 12px; background: #2f9e77; padding: 6px; border-radius: 14px; box-shadow: 0 4px 12px rgba(47,158,119,0.2); }
-  .cell { aspect-ratio: 1; background: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #2f9e77; }
+  /* Izgara Kaymasını Düzeltilmiş Ana Çerçeve */
+  #grid { 
+    display: grid; 
+    grid-template-columns: repeat(6, 1fr); 
+    gap: 3px; 
+    width: 100%;
+    max-width: 330px; 
+    margin: 0 auto 15px; 
+    background: #2f9e77; 
+    padding: 6px; 
+    border-radius: 14px; 
+    box-shadow: 0 4px 12px rgba(47,158,119,0.2);
+    box-sizing: border-box;
+  }
+
+  .cell { 
+    aspect-ratio: 1; 
+    background: #fff; 
+    border-radius: 6px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #2f9e77; 
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .cell.given { background: #fff3cf; color: #7a5b12; }
   .cell.selected { border: 3px solid #007aff; }
   .cell.error { background: #ffd8d8; color: #d32f2f; }
   
-  /* 2x3 Blok Çizgileri */
-  .cell.border-bottom { margin-bottom: 4px; }
-  .cell.border-right { margin-right: 4px; }
+  /* 2x3 Blok Ayrımı İçin Izgara Boşluğu Kullanımı (Taşmayı Önler) */
+  .cell.border-bottom { margin-bottom: 3px; }
+  .cell.border-right { margin-right: 3px; }
 
-  .numpad { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto 12px; }
+  .numpad { display: flex; justify-content: center; gap: 6px; width: 100%; max-width: 330px; margin: 0 auto 12px; }
   .num-btn { flex: 1; aspect-ratio: 1; background: #fff; border: 2px solid #2f9e77; color: #2f9e77; font-size: 20px; font-weight: bold; border-radius: 10px; }
   .num-btn:active { background: #eaf6f0; }
 
-  .controls { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto; }
+  .controls { display: flex; justify-content: center; gap: 8px; width: 100%; max-width: 330px; margin: 0 auto; }
   .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; background: #2f9e77; color: white; }
   .btn-orange { background: #ff9500; }
   .btn-blue { background: #007aff; }
 
-  /* Modal (Seviye Seçim Penceresi) */
+  /* Modal */
   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
   .modal-content { background: white; padding: 20px; border-radius: 16px; max-width: 280px; width: 90%; text-align: center; }
   .modal-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; color: white; }
@@ -59,7 +86,6 @@
   <button class="btn" onclick="openLevelModal()">Yeni Oyun</button>
 </div>
 
-<!-- Zorluk Seçim Modalı -->
 <div id="levelModal" class="modal">
   <div class="modal-content">
     <h3 style="margin-top:0; color:#2f9e77;">Zorluk Seçin</h3>
@@ -203,7 +229,6 @@
       let c = sel[1];
       let v = grid[r][c].val;
 
-      // Satır kontrolü
       for(let i=0; i<6; i++){
         if(i !== c && grid[r][i].val === v){
           grid[r][c].err = true;
@@ -212,7 +237,6 @@
         }
       }
 
-      // Sütun kontrolü
       if(!errorDetail){
         for(let i=0; i<6; i++){
           if(i !== r && grid[i][c].val === v){
@@ -223,7 +247,6 @@
         }
       }
 
-      // 2x3 Blok kontrolü
       if(!errorDetail){
         let boxR = Math.floor(r / 2) * 2;
         let boxC = Math.floor(c / 3) * 3;
