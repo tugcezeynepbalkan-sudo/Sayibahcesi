@@ -6,24 +6,44 @@
 <title>Sayı Bahçesi</title>
 <style>
   * { box-sizing: border-box; touch-action: manipulation; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #eaf6f0; text-align: center; margin: 0; padding: 20px; -webkit-user-select: none; }
-  h1 { color: #2f9e77; margin: 10px 0 5px; font-size: 28px; }
-  #msg { font-size: 14px; color: #333; height: 30px; margin-bottom: 10px; font-weight: 500; }
-  #grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-width: 330px; margin: 0 auto 15px; background: #2f9e77; padding: 6px; border-radius: 14px; box-shadow: 0 4px 12px rgba(47,158,119,0.2); }
-  .cell { aspect-ratio: 1; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #2f9e77; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #eaf6f0; text-align: center; margin: 0; padding: 15px; -webkit-user-select: none; }
+  h1 { color: #2f9e77; margin: 5px 0 2px; font-size: 26px; }
+  #sub { font-size: 13px; color: #2f9e77; margin-bottom: 8px; font-weight: 600; }
+  #msg { font-size: 14px; color: #333; min-height: 38px; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
+  
+  #grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; max-width: 330px; margin: 0 auto 12px; background: #2f9e77; padding: 6px; border-radius: 14px; box-shadow: 0 4px 12px rgba(47,158,119,0.2); }
+  .cell { aspect-ratio: 1; background: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #2f9e77; }
   .cell.given { background: #fff3cf; color: #7a5b12; }
   .cell.selected { border: 3px solid #007aff; }
   .cell.error { background: #ffd8d8; color: #d32f2f; }
-  .numpad { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto 15px; }
+  
+  /* 2x3 Blok Çizgileri */
+  .cell.border-bottom { margin-bottom: 4px; }
+  .cell.border-right { margin-right: 4px; }
+
+  .numpad { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto 12px; }
   .num-btn { flex: 1; aspect-ratio: 1; background: #fff; border: 2px solid #2f9e77; color: #2f9e77; font-size: 20px; font-weight: bold; border-radius: 10px; }
-  .controls { display: flex; justify-content: center; gap: 10px; max-width: 330px; margin: 0 auto; }
-  .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; background: #2f9e77; color: white; }
+  .num-btn:active { background: #eaf6f0; }
+
+  .controls { display: flex; justify-content: center; gap: 8px; max-width: 330px; margin: 0 auto; }
+  .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; background: #2f9e77; color: white; }
+  .btn-orange { background: #ff9500; }
+  .btn-blue { background: #007aff; }
+
+  /* Modal (Seviye Seçim Penceresi) */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
+  .modal-content { background: white; padding: 20px; border-radius: 16px; max-width: 280px; width: 90%; text-align: center; }
+  .modal-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; color: white; }
 </style>
 </head>
 <body>
+
 <h1>Sayı Bahçesi</h1>
-<div id="msg">Bir kutu seç, sonra bir sayı yerleştir.</div>
+<div id="sub">Seviye: Kolay</div>
+<div id="msg">Bir kutu seç, sonra sayıya bas.</div>
+
 <div id="grid"></div>
+
 <div class="numpad">
   <button class="num-btn" onclick="setNum(1)">1</button>
   <button class="num-btn" onclick="setNum(2)">2</button>
@@ -32,56 +52,223 @@
   <button class="num-btn" onclick="setNum(5)">5</button>
   <button class="num-btn" onclick="setNum(6)">6</button>
 </div>
+
 <div class="controls">
-  <button class="btn" style="background:#ff9500" onclick="erase()">Sil</button>
-  <button class="btn" onclick="init()">Yeni Oyun</button>
+  <button class="btn btn-orange" onclick="erase()">Sil</button>
+  <button class="btn btn-blue" onclick="restartCurrent()">Baştan Başla</button>
+  <button class="btn" onclick="openLevelModal()">Yeni Oyun</button>
 </div>
+
+<!-- Zorluk Seçim Modalı -->
+<div id="levelModal" class="modal">
+  <div class="modal-content">
+    <h3 style="margin-top:0; color:#2f9e77;">Zorluk Seçin</h3>
+    <button class="modal-btn" style="background:#2f9e77" onclick="selectDifficulty('easy')">Kolay (Seviye 1)</button>
+    <button class="modal-btn" style="background:#ff9500" onclick="selectDifficulty('medium')">Orta (Seviye 2)</button>
+    <button class="modal-btn" style="background:#d32f2f" onclick="selectDifficulty('hard')">Zor (Seviye 3)</button>
+    <button class="modal-btn" style="background:#8e8e93" onclick="closeLevelModal()">İptal</button>
+  </div>
+</div>
+
 <script>
-  let base=[[1,2,3,4,5,6],[4,5,6,1,2,3],[2,3,1,5,6,4],[5,6,4,2,3,1],[3,1,2,6,4,5],[6,4,5,3,1,2]];
-  let grid=[], sel=null;
-  function init(){
-    grid=[]; sel=null; document.getElementById('msg').innerText="Bir kutu seç, sonra bir sayı yerleştir.";
-    let pos=[]; for(let r=0;r<6;r++) for(let c=0;c<6;c++) pos.push([r,c]);
-    pos.sort(()=>Math.random()-0.5);
-    let empties = new Set(pos.slice(0,12).map(p=>p[0]+','+p[1]));
-    for(let r=0;r<6;r++){
-      grid[r]=[];
-      for(let c=0;c<6;c++){
-        let isE = empties.has(r+','+c);
-        grid[r][c] = { val: isE ? null : base[r][c], given: !isE, err: false };
+  const baseSolution = [
+    [1, 2, 3, 4, 5, 6],
+    [4, 5, 6, 1, 2, 3],
+    [2, 3, 1, 5, 6, 4],
+    [5, 6, 4, 2, 3, 1],
+    [3, 1, 2, 6, 4, 5],
+    [6, 4, 5, 3, 1, 2]
+  ];
+
+  let grid = [];
+  let initialGrid = [];
+  let sel = null;
+  let currentDiff = 'easy';
+
+  const diffConfigs = {
+    easy: { name: 'Kolay', emptyCount: 12 },
+    medium: { name: 'Orta', emptyCount: 16 },
+    hard: { name: 'Zor', emptyCount: 20 }
+  };
+
+  const winMessages = [
+    "Harika gidiyorsun! 🎉",
+    "Süper bir hamle! ⭐",
+    "Çok iyi gözlem! 👏",
+    "Doğru seçim! 🌟"
+  ];
+
+  function openLevelModal() { document.getElementById('levelModal').style.display = 'flex'; }
+  function closeLevelModal() { document.getElementById('levelModal').style.display = 'none'; }
+
+  function selectDifficulty(diff) {
+    currentDiff = diff;
+    closeLevelModal();
+    initGame();
+  }
+
+  function initGame() {
+    grid = [];
+    initialGrid = [];
+    sel = null;
+    
+    document.getElementById('sub').innerText = "Seviye: " + diffConfigs[currentDiff].name;
+    let msg = document.getElementById('msg');
+    msg.innerText = "Bir kutu seç, sonra sayıya bas.";
+    msg.style.color = "#333";
+
+    let digits = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+    let solution = baseSolution.map(row => row.map(val => digits[val - 1]));
+
+    let pos = [];
+    for(let r=0; r<6; r++) for(let c=0; c<6; c++) pos.push([r,c]);
+    pos.sort(() => Math.random() - 0.5);
+
+    let emptyCount = diffConfigs[currentDiff].emptyCount;
+    let empties = new Set(pos.slice(0, emptyCount).map(p => p[0] + ',' + p[1]));
+
+    for(let r=0; r<6; r++){
+      grid[r] = [];
+      initialGrid[r] = [];
+      for(let c=0; c<6; c++){
+        let isE = empties.has(r + ',' + c);
+        let cellData = { val: isE ? null : solution[r][c], given: !isE, err: false };
+        grid[r][c] = { ...cellData };
+        initialGrid[r][c] = { ...cellData };
       }
     }
     render();
   }
+
+  function restartCurrent() {
+    sel = null;
+    grid = JSON.parse(JSON.stringify(initialGrid));
+    let msg = document.getElementById('msg');
+    msg.innerText = "Bulmaca sıfırlandı.";
+    msg.style.color = "#333";
+    render();
+  }
+
   function render(){
-    let g = document.getElementById('grid'); g.innerHTML='';
-    for(let r=0;r<6;r++){
-      for(let c=0;c<6;c++){
+    let g = document.getElementById('grid');
+    g.innerHTML = '';
+    for(let r=0; r<6; r++){
+      for(let c=0; c<6; c++){
         let d = document.createElement('div');
-        d.className = 'cell' + (grid[r][c].given?' given':'') + (sel&&sel[0]==r&&sel[1]==c?' selected':'') + (grid[r][c].err?' error':'');
+        let classes = ['cell'];
+        if(grid[r][c].given) classes.push('given');
+        if(sel && sel[0] === r && sel[1] === c) classes.push('selected');
+        if(grid[r][c].err) classes.push('error');
+        if(r === 1 || r === 3) classes.push('border-bottom');
+        if(c === 2) classes.push('border-right');
+
+        d.className = classes.join(' ');
         d.innerText = grid[r][c].val || '';
-        d.onclick = ()=>{ if(!grid[r][c].given) { sel=[r,c]; render(); } };
+        d.onclick = () => {
+          if(!grid[r][c].given) { 
+            sel = [r, c]; 
+            render(); 
+          } else { 
+            let msg = document.getElementById('msg');
+            msg.innerText = "Bu sayı hazır verilmiş, değiştirilemez."; 
+            msg.style.color = "#ff9500";
+          }
+        };
         g.appendChild(d);
       }
     }
   }
+
   function setNum(n){
     if(!sel) return;
     grid[sel[0]][sel[1]].val = n;
-    validate(); render();
+    validate(n);
+    render();
   }
-  function erase(){ if(sel) { grid[sel[0]][sel[1]].val=null; validate(); render(); } }
-  function validate(){
-    for(let r=0;r<6;r++) for(let c=0;c<6;c++) grid[r][c].err=false;
-    for(let r=0;r<6;r++) for(let c=0;c<6;c++){
-      let v=grid[r][c].val; if(!v) continue;
-      for(let i=0;i<6;i++){
-        if(i!=c && grid[r][i].val==v) grid[r][c].err=grid[r][i].err=true;
-        if(i!=r && grid[i][c].val==v) grid[r][c].err=grid[i][c].err=true;
+
+  function erase(){
+    if(!sel) return;
+    grid[sel[0]][sel[1]].val = null;
+    validate(null);
+    render();
+  }
+
+  function validate(lastNum){
+    for(let r=0; r<6; r++) for(let c=0; c<6; c++) grid[r][c].err = false;
+
+    let errorDetail = null;
+
+    if(sel && grid[sel[0]][sel[1]].val) {
+      let r = sel[0];
+      let c = sel[1];
+      let v = grid[r][c].val;
+
+      // Satır kontrolü
+      for(let i=0; i<6; i++){
+        if(i !== c && grid[r][i].val === v){
+          grid[r][c].err = true;
+          grid[r][i].err = true;
+          errorDetail = `${v} sayısı bu satırda zaten var!`;
+        }
+      }
+
+      // Sütun kontrolü
+      if(!errorDetail){
+        for(let i=0; i<6; i++){
+          if(i !== r && grid[i][c].val === v){
+            grid[r][c].err = true;
+            grid[i][c].err = true;
+            errorDetail = `${v} sayısı bu sütunda zaten var!`;
+          }
+        }
+      }
+
+      // 2x3 Blok kontrolü
+      if(!errorDetail){
+        let boxR = Math.floor(r / 2) * 2;
+        let boxC = Math.floor(c / 3) * 3;
+        for(let br = boxR; br < boxR + 2; br++){
+          for(let bc = boxC; bc < boxC + 3; bc++){
+            if((br !== r || bc !== c) && grid[br][bc].val === v){
+              grid[r][c].err = true;
+              grid[br][bc].err = true;
+              errorDetail = `${v} sayısı bu 2x3 kutuda zaten var!`;
+            }
+          }
+        }
       }
     }
+
+    let msg = document.getElementById('msg');
+    if(errorDetail){
+      msg.innerText = errorDetail;
+      msg.style.color = "#d32f2f";
+    } else if(sel && grid[sel[0]][sel[1]].val) {
+      let randomWinMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
+      msg.innerText = randomWinMsg;
+      msg.style.color = "#2f9e77";
+      checkWin();
+    } else {
+      msg.innerText = "Bir kutu seç, sonra sayıya bas.";
+      msg.style.color = "#333";
+    }
   }
-  init();
+
+  function checkWin(){
+    let complete = true;
+    for(let r=0; r<6; r++){
+      for(let c=0; c<6; c++){
+        if(!grid[r][c].val || grid[r][c].err) complete = false;
+      }
+    }
+    if(complete){
+      let msg = document.getElementById('msg');
+      msg.innerText = "Tebrikler! Bulmacayı tamamladın! 🎉🏆";
+      msg.style.color = "#2f9e77";
+    }
+  }
+
+  initGame();
 </script>
 </body>
 </html>
